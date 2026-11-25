@@ -1,0 +1,16 @@
+{
+  "name": "absensi",
+  "version": "1.0.0",
+  "description": "Aplikasi pencatatan kehadiran harian karyawan berbasis web sesuai spesifikasi **PRD Aplikasi Absensi Karyawan** dan sistem desain **Google Stitch (`Aplikasi Absensi Karyawan UI`)**.",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "install:all": "npm install --prefix backend && npm install --prefix frontend"
+  },
+  "dependencies": {
+    "concurrently": "^10.0.7"
+  }
+}

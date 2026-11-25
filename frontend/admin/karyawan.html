@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manajemen Data Karyawan — Dashboard Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/public/css/tailwind.css" />
+</head>
+<body class="min-h-screen bg-slate-50 text-[#0F172A] flex flex-col">
+
+  <!-- Navigasi Atas Admin -->
+  <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
+      <div class="flex items-center gap-6">
+        <a href="/admin/index.html" class="flex items-center gap-2.5">
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#1D4ED8] text-white shadow-sm">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <span class="block text-sm font-extrabold text-[#0F172A] sm:text-base">Admin Absensi</span>
+            <span class="block text-[11px] font-medium text-slate-500">Panel Kendali Kehadiran</span>
+          </div>
+        </a>
+
+        <nav class="flex items-center gap-1 rounded-xl bg-slate-100 p-1">
+          <a
+            href="/admin/index.html"
+            class="rounded-lg px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:text-[#0F172A] transition"
+          >
+            Data Absensi
+          </a>
+          <a
+            href="/admin/karyawan.html"
+            class="rounded-lg bg-[#1D4ED8] px-3.5 py-1.5 text-xs font-bold text-white shadow-sm"
+          >
+            Data Karyawan
+          </a>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <a
+          href="/user/index.html"
+          class="hidden md:inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-[#1D4ED8] hover:text-[#1D4ED8] transition"
+        >
+          Form Absensi Publik &nearr;
+        </a>
+        <div class="hidden sm:flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700">
+          <span class="h-2 w-2 rounded-full bg-[#059669]"></span>
+          <span id="admin-display-name">Administrator</span>
+        </div>
+        <button
+          type="button"
+          id="btn-admin-logout"
+          class="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-100 transition"
+        >
+          Keluar
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Konten Utama -->
+  <main class="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8 space-y-6">
+
+    <!-- Header Halaman -->
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h1 class="text-xl font-extrabold tracking-tight text-[#0F172A] sm:text-2xl">
+          Manajemen Data Master Karyawan
+        </h1>
+        <p class="mt-1 text-sm text-slate-500">
+          Kelola daftar karyawan yang berhak melakukan absensi pada halaman publik.
+        </p>
+      </div>
+
+      <button type="button" id="btn-add-employee" class="stitch-btn-primary self-start sm:self-auto">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.3">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        Tambah Karyawan
+      </button>
+    </div>
+
+    <!-- Ringkasan Statistik Karyawan -->
+    <section class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div class="stitch-card p-5">
+        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Karyawan</p>
+        <p id="emp-stat-total" class="mt-2 text-3xl font-extrabold text-[#0F172A]">0</p>
+      </div>
+      <div class="stitch-card p-5 border-l-4 border-l-[#059669]">
+        <p class="text-xs font-bold uppercase tracking-wider text-[#059669]">Karyawan Aktif</p>
+        <p id="emp-stat-active" class="mt-2 text-3xl font-extrabold text-[#059669]">0</p>
+      </div>
+      <div class="stitch-card p-5 border-l-4 border-l-slate-400">
+        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Nonaktif</p>
+        <p id="emp-stat-inactive" class="mt-2 text-3xl font-extrabold text-slate-600">0</p>
+      </div>
+    </section>
+
+    <!-- Tabel Master Karyawan -->
+    <section class="stitch-card overflow-hidden">
+      <div class="flex flex-col gap-3 border-b border-slate-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+        <h2 class="text-base font-bold text-[#0F172A]">Daftar Karyawan Terdaftar</h2>
+        <div class="relative w-full sm:w-72">
+          <svg class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text"
+            id="emp-search-input"
+            placeholder="Cari kode atau nama karyawan..."
+            class="stitch-input pl-10 py-2 text-sm"
+          />
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200 bg-slate-50/90 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <th class="px-6 py-3.5">Kode Karyawan</th>
+              <th class="px-6 py-3.5">Nama Lengkap</th>
+              <th class="px-6 py-3.5">Status Aktif</th>
+              <th class="px-6 py-3.5 text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="employees-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal Form Tambah / Edit Karyawan -->
+  <div
+    id="employee-form-modal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+        <h3 id="employee-modal-title" class="text-base font-extrabold text-[#0F172A]">Tambah Karyawan Baru</h3>
+        <button
+          type="button"
+          id="btn-close-emp-modal"
+          class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+        >
+          &times;
+        </button>
+      </div>
+
+      <form id="employee-crud-form" class="p-6 space-y-4" novalidate>
+        <div>
+          <label for="emp-code-input" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+            Kode Karyawan <span class="text-rose-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="emp-code-input"
+            placeholder="Contoh: KRY-004"
+            maxlength="30"
+            required
+            class="stitch-input font-mono uppercase"
+          />
+          <p class="mt-1 text-[11px] text-slate-400">Kode identitas unik karyawan (misal KRY-001).</p>
+        </div>
+
+        <div>
+          <label for="emp-name-input" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+            Nama Lengkap <span class="text-rose-500">*</span>
+          </label>
+          <input
+            type="text"
+            id="emp-name-input"
+            placeholder="Masukkan nama lengkap karyawan"
+            maxlength="100"
+            required
+            class="stitch-input"
+          />
+        </div>
+
+        <div>
+          <label for="emp-status-select" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+            Status Keaktifan
+          </label>
+          <select id="emp-status-select" class="stitch-input">
+            <option value="1">Aktif (Tampil di Form Absensi)</option>
+            <option value="0">Nonaktif (Disembunyikan dari Form Absensi)</option>
+          </select>
+        </div>
+
+        <p
+          id="emp-form-error"
+          class="hidden rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-xs font-medium text-rose-700"
+        ></p>
+
+        <div class="flex items-center justify-end gap-2.5 pt-2">
+          <button type="button" id="btn-cancel-emp-modal" class="stitch-btn-secondary">
+            Batal
+          </button>
+          <button type="submit" id="btn-save-employee" class="stitch-btn-primary">
+            Simpan Karyawan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Dialog Konfirmasi Hapus Karyawan -->
+  <div
+    id="delete-confirm-modal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div class="w-full max-w-md overflow-hidden rounded-2xl bg-white p-6 shadow-2xl border border-slate-200">
+      <div class="flex items-start gap-4">
+        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600">
+          <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z" />
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-base font-extrabold text-[#0F172A]">Konfirmasi Hapus Karyawan</h3>
+          <p class="mt-1.5 text-sm text-slate-600 leading-relaxed">
+            Apakah Anda yakin ingin menghapus karyawan
+            <strong id="delete-target-name" class="text-[#0F172A]">-</strong>?
+            Tindakan ini akan menghapus data karyawan beserta riwayat absensinya secara permanen.
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-6 flex items-center justify-end gap-2.5">
+        <button type="button" id="btn-cancel-delete" class="stitch-btn-secondary">
+          Batal
+        </button>
+        <button
+          type="button"
+          id="btn-confirm-delete"
+          class="inline-flex items-center justify-center rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-rose-700 transition disabled:opacity-60"
+        >
+          Ya, Hapus Karyawan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/public/js/api.js"></script>
+  <script src="/public/js/admin-employees.js"></script>
+</body>
+</html>

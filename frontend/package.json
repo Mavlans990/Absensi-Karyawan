@@ -1,0 +1,19 @@
+{
+  "name": "absensi-karyawan-frontend",
+  "version": "1.0.0",
+  "description": "Frontend Aplikasi Absensi Karyawan (HTML + Tailwind CSS + Vanilla JS)",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "build:css": "tailwindcss -i ./src-input.css -o ./public/css/tailwind.css --minify"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "nodemon": "^3.1.14"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}

@@ -1,0 +1,9 @@
+node_modules/
+.env
+*.log
+.DS_Store
+Thumbs.db
+backend/uploads/signatures/*
+!backend/uploads/signatures/.gitkeep
+backend/databases/*
+!backend/databases/.gitkeep

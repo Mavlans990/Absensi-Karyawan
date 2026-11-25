@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pemantauan Absensi — Dashboard Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/public/css/tailwind.css" />
+</head>
+<body class="min-h-screen bg-slate-50 text-[#0F172A] flex flex-col">
+
+  <!-- Navigasi Atas Admin -->
+  <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
+      <div class="flex items-center gap-6">
+        <a href="/admin/index.html" class="flex items-center gap-2.5">
+          <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-[#1D4ED8] text-white shadow-sm">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <span class="block text-sm font-extrabold text-[#0F172A] sm:text-base">Admin Absensi</span>
+            <span class="block text-[11px] font-medium text-slate-500">Panel Kendali Kehadiran</span>
+          </div>
+        </a>
+
+        <nav class="flex items-center gap-1 rounded-xl bg-slate-100 p-1">
+          <a
+            href="/admin/index.html"
+            class="rounded-lg bg-[#1D4ED8] px-3.5 py-1.5 text-xs font-bold text-white shadow-sm"
+          >
+            Data Absensi
+          </a>
+          <a
+            href="/admin/karyawan.html"
+            class="rounded-lg px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:text-[#0F172A] transition"
+          >
+            Data Karyawan
+          </a>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <a
+          href="/user/index.html"
+          class="hidden md:inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 hover:border-[#1D4ED8] hover:text-[#1D4ED8] transition"
+        >
+          Form Absensi Publik &nearr;
+        </a>
+        <div class="hidden sm:flex items-center gap-2 rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700">
+          <span class="h-2 w-2 rounded-full bg-[#059669]"></span>
+          <span id="admin-display-name">Administrator</span>
+        </div>
+        <button
+          type="button"
+          id="btn-admin-logout"
+          class="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-100 transition"
+        >
+          Keluar
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Konten Dashboard -->
+  <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8 space-y-6">
+
+    <!-- Judul Halaman & Tombol Catat Izin/Sakit -->
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <div class="flex flex-wrap items-center gap-2.5">
+          <h1 class="text-xl font-extrabold tracking-tight text-[#0F172A] sm:text-2xl">
+            Pemantauan Absensi Karyawan
+          </h1>
+          <span
+            id="server-date-badge"
+            class="rounded-full border border-blue-200 bg-[#EFF6FF] px-3 py-0.5 text-xs font-semibold text-[#1D4ED8]"
+          >
+            Memuat waktu server...
+          </span>
+        </div>
+        <p class="mt-1 text-sm text-slate-500">
+          Pantau jam masuk, jam pulang, status kehadiran, serta verifikasi bukti tanda tangan digital karyawan.
+        </p>
+      </div>
+
+      <button
+        type="button"
+        id="btn-open-leave-modal"
+        class="stitch-btn-primary self-start sm:self-auto"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        Catat Izin / Sakit
+      </button>
+    </div>
+
+    <!-- Kartu Ringkasan KPI -->
+    <section class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div class="stitch-card p-5">
+        <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Catatan</p>
+        <p id="kpi-total" class="mt-2 text-3xl font-extrabold text-[#0F172A]">0</p>
+        <p class="mt-1 text-xs text-slate-400">Sesuai filter aktif</p>
+      </div>
+
+      <div class="stitch-card p-5 border-l-4 border-l-[#059669]">
+        <p class="text-xs font-bold uppercase tracking-wider text-[#059669]">Tepat Waktu (Hadir)</p>
+        <p id="kpi-hadir" class="mt-2 text-3xl font-extrabold text-[#059669]">0</p>
+        <p class="mt-1 text-xs text-slate-400">Masuk &le; 08:00 WIB</p>
+      </div>
+
+      <div class="stitch-card p-5 border-l-4 border-l-[#D97706]">
+        <p class="text-xs font-bold uppercase tracking-wider text-[#D97706]">Terlambat</p>
+        <p id="kpi-terlambat" class="mt-2 text-3xl font-extrabold text-[#D97706]">0</p>
+        <p class="mt-1 text-xs text-slate-400">Masuk &gt; 08:00 WIB</p>
+      </div>
+
+      <div class="stitch-card p-5 border-l-4 border-l-[#1D4ED8]">
+        <p class="text-xs font-bold uppercase tracking-wider text-[#1D4ED8]">Izin &amp; Sakit</p>
+        <p id="kpi-leave" class="mt-2 text-3xl font-extrabold text-[#1D4ED8]">0</p>
+        <p class="mt-1 text-xs text-slate-400">Ketidakhadiran tercatat</p>
+      </div>
+    </section>
+
+    <!-- Panel Filter -->
+    <section class="stitch-card p-5">
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-12 md:items-end">
+        <!-- Filter Tanggal -->
+        <div class="md:col-span-4">
+          <div class="mb-1.5 flex items-center justify-between">
+            <label for="filter-date" class="text-xs font-bold uppercase tracking-wider text-slate-600">
+              Filter Tanggal
+            </label>
+            <div class="flex items-center gap-1.5">
+              <button
+                type="button"
+                id="btn-quick-today"
+                class="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition"
+              >
+                Hari Ini
+              </button>
+              <button
+                type="button"
+                id="btn-quick-all-dates"
+                class="rounded-lg bg-[#1D4ED8] px-2.5 py-1 text-xs font-semibold text-white transition"
+              >
+                Semua Tanggal
+              </button>
+            </div>
+          </div>
+          <input type="date" id="filter-date" class="stitch-input" />
+        </div>
+
+        <!-- Filter Karyawan -->
+        <div class="md:col-span-4">
+          <label for="filter-employee" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+            Filter Karyawan
+          </label>
+          <select id="filter-employee" class="stitch-input">
+            <option value="">Semua Karyawan</option>
+          </select>
+        </div>
+
+        <!-- Filter Status -->
+        <div class="md:col-span-3">
+          <label for="filter-status" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+            Status Kehadiran
+          </label>
+          <select id="filter-status" class="stitch-input">
+            <option value="Semua">Semua Status</option>
+            <option value="Hadir">Hadir</option>
+            <option value="Terlambat">Terlambat</option>
+            <option value="Izin">Izin</option>
+            <option value="Sakit">Sakit</option>
+          </select>
+        </div>
+
+        <!-- Tombol Reset -->
+        <div class="md:col-span-1">
+          <button
+            type="button"
+            id="btn-reset-filters"
+            title="Reset semua filter"
+            class="stitch-btn-secondary w-full py-2.5 text-xs"
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabel Data Absensi -->
+    <section class="stitch-card overflow-hidden">
+      <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+        <div>
+          <h2 class="text-base font-bold text-[#0F172A]">Daftar Riwayat Kehadiran</h2>
+          <p id="table-result-info" class="text-xs text-slate-500 mt-0.5">Memuat data...</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200 bg-slate-50/90 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <th class="px-5 py-3.5">Tanggal</th>
+              <th class="px-5 py-3.5">Kode</th>
+              <th class="px-5 py-3.5">Nama</th>
+              <th class="px-5 py-3.5">Jam Masuk</th>
+              <th class="px-5 py-3.5">Jam Pulang</th>
+              <th class="px-5 py-3.5">Status</th>
+              <th class="px-5 py-3.5 text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="attendance-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal Pratinjau Gambar Tanda Tangan -->
+  <div
+    id="signature-preview-modal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div class="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl border border-slate-200">
+      <div class="flex items-start justify-between border-b border-slate-200 px-6 py-4">
+        <div>
+          <div class="flex flex-wrap items-center gap-2.5">
+            <h3 id="sig-modal-employee-name" class="text-base font-extrabold text-[#0F172A]">-</h3>
+            <div id="sig-modal-status"></div>
+          </div>
+          <p id="sig-modal-meta" class="mt-0.5 text-xs text-slate-500">-</p>
+        </div>
+        <button
+          type="button"
+          id="btn-close-sig-modal"
+          class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+          aria-label="Tutup modal"
+        >
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 gap-4 p-6 sm:grid-cols-2">
+        <!-- Kartu TTD Masuk -->
+        <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+          <div class="mb-2.5 flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-[#1D4ED8]">Tanda Tangan Masuk</span>
+            <span id="sig-masuk-time" class="font-mono text-xs font-semibold text-slate-600">-</span>
+          </div>
+          <div
+            id="sig-masuk-container"
+            class="flex min-h-[140px] items-center justify-center rounded-xl border border-slate-200 bg-white p-3"
+          ></div>
+        </div>
+
+        <!-- Kartu TTD Pulang -->
+        <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+          <div class="mb-2.5 flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-[#059669]">Tanda Tangan Pulang</span>
+            <span id="sig-pulang-time" class="font-mono text-xs font-semibold text-slate-600">-</span>
+          </div>
+          <div
+            id="sig-pulang-container"
+            class="flex min-h-[140px] items-center justify-center rounded-xl border border-slate-200 bg-white p-3"
+          ></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Catat Status Izin / Sakit -->
+  <div
+    id="leave-status-modal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div class="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+        <h3 class="text-base font-extrabold text-[#0F172A]">Catat Status Izin / Sakit</h3>
+        <button
+          type="button"
+          id="btn-close-leave-modal"
+          class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+        >
+          &times;
+        </button>
+      </div>
+
+      <form id="leave-status-form" class="p-6 space-y-4">
+        <div>
+          <label for="leave-employee-id" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+            Karyawan <span class="text-rose-500">*</span>
+          </label>
+          <select id="leave-employee-id" class="stitch-input" required></select>
+        </div>
+
+        <div>
+          <label for="leave-date" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+            Tanggal <span class="text-rose-500">*</span>
+          </label>
+          <input type="date" id="leave-date" class="stitch-input" required />
+        </div>
+
+        <div>
+          <label for="leave-status-value" class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
+            Status Ketidakhadiran <span class="text-rose-500">*</span>
+          </label>
+          <select id="leave-status-value" class="stitch-input" required>
+            <option value="Izin">Izin</option>
+            <option value="Sakit">Sakit</option>
+          </select>
+        </div>
+
+        <p
+          id="leave-form-error"
+          class="hidden rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-xs font-medium text-rose-700"
+        ></p>
+
+        <div class="flex items-center justify-end gap-2.5 pt-2">
+          <button type="button" id="btn-cancel-leave-modal" class="stitch-btn-secondary">
+            Batal
+          </button>
+          <button type="submit" id="btn-submit-leave" class="stitch-btn-primary">
+            Simpan Catatan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/public/js/api.js"></script>
+  <script src="/public/js/admin-attendance.js"></script>
+</body>
+</html>
