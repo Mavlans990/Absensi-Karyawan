@@ -68,6 +68,33 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Inisialisasi database secara lazy: dijalankan sekali saat request API pertama
+// masuk (per proses). Di server lokal hasilnya sama seperti inisialisasi saat
+// start; di serverless (Vercel) ini wajib karena tidak ada fase "start server".
+// Seed bersifat idempoten (tabel IF NOT EXISTS + data contoh hanya bila kosong).
+let initPromise = null;
+function ensureDatabaseReady() {
+  if (!initPromise) {
+    initPromise = initializeAndSeedDatabase().catch((err) => {
+      initPromise = null; // Izinkan percobaan ulang pada request berikutnya
+      throw err;
+    });
+  }
+  return initPromise;
+}
+
+app.use('/api', async (req, res, next) => {
+  try {
+    await ensureDatabaseReady();
+    next();
+  } catch (error) {
+    console.error('[Backend] Inisialisasi database gagal:', error);
+    res.status(500).json({
+      message: 'Database belum siap. Periksa konfigurasi koneksi database (DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_SSL_CA).'
+    });
+  }
+});
+
 // Rute REST API
 app.use('/api', publicRoutes);
 app.use('/api/admin', adminRoutes);
@@ -81,7 +108,7 @@ app.use((req, res) => {
 
 async function startServer() {
   try {
-    await initializeAndSeedDatabase();
+    await ensureDatabaseReady();
     app.listen(PORT, '0.0.0.0', () => {
       const now = getJakartaNow();
       console.log(
@@ -94,4 +121,11 @@ async function startServer() {
   }
 }
 
-startServer();
+// Mode server biasa (lokal / Railway / Render / VPS): `node app.js` menyalakan server.
+if (require.main === module) {
+  startServer();
+}
+
+// Mode serverless (Vercel): app diekspor dan dipanggil lewat api/index.js,
+// tanpa listen() — Vercel yang memanggil app sebagai function handler.
+module.exports = app;

@@ -1,8 +1,15 @@
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const zlib = require('zlib');
 
-const SIGNATURES_DIR = path.join(__dirname, '..', 'uploads', 'signatures');
+// Di serverless (Vercel) filesystem project bersifat read-only, jadi folder
+// tanda tangan dipindah ke /tmp. Konsekuensinya file tanda tangan di Vercel
+// TIDAK persisten (hilang saat instance function berganti) — untuk demo ini
+// dapat diterima; pemakaian nyata perlu object storage (mis. Vercel Blob / S3).
+const SIGNATURES_DIR = process.env.VERCEL
+  ? path.join(os.tmpdir(), 'absensi-signatures')
+  : path.join(__dirname, '..', 'uploads', 'signatures');
 const MAX_SIGNATURE_BYTES = 2 * 1024 * 1024; // 2 MB
 const PNG_MAGIC_BYTES = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 

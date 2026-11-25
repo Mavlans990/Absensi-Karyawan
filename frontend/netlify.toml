@@ -1,0 +1,2 @@
+/api/*      https://https://absensi-karyawan-phi.vercel.app/api/:splat      200
+/uploads/*  https://https://absensi-karyawan-phi.vercel.app/uploads/:splat  200
