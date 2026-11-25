@@ -1,2 +1,23 @@
-/api/*      https://https://absensi-karyawan-phi.vercel.app/api/:splat      200
-/uploads/*  https://https://absensi-karyawan-phi.vercel.app/uploads/:splat  200
+# Konfigurasi Netlify untuk frontend Aplikasi Absensi Karyawan.
+# File ini diletakkan di folder frontend/ (base directory Netlify = frontend).
+#
+# Peran file ini: menggantikan proxy Express (frontend/app.js) yang TIDAK
+# berjalan di Netlify. Semua request /api/* dan /uploads/* diteruskan (proxy,
+# status 200) ke backend di Vercel, persis seperti proxy lokal port 3000->4000.
+# Ganti domain di bawah bila domain backend Vercel berubah.
+
+[[redirects]]
+  from = "/api/*"
+  to = "https://absensi-karyawan-phi.vercel.app/api/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/uploads/*"
+  to = "https://absensi-karyawan-phi.vercel.app/uploads/:splat"
+  status = 200
+
+# Halaman utama langsung membuka form absensi (di lokal ini kerja routing Express).
+[[redirects]]
+  from = "/"
+  to = "/user/"
+  status = 200
