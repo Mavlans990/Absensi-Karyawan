@@ -1,6 +1,15 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const AdminModel = require('../models/adminModel');
+
+// Secret JWT WAJIB dari environment — tidak ada fallback tertulis di kode,
+// supaya tidak ada yang bisa memalsukan token admin dari salinan kode ini.
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET belum diisi di environment. Server tidak boleh jalan tanpa secret JWT.');
+}
 
 const AuthController = {
   async login(req, res) {
@@ -34,11 +43,9 @@ const AuthController = {
         nama_lengkap: admin.nama_lengkap
       };
 
-      const token = jwt.sign(
-        payload,
-        process.env.JWT_SECRET || 'stitch-absensi-karyawan-jwt-secret-key-2026',
-        { expiresIn: process.env.JWT_EXPIRES_IN || '12h' }
-      );
+      const token = jwt.sign(payload, JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRES_IN || '12h'
+      });
 
       return res.status(200).json({
         message: 'Login berhasil.',

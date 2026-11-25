@@ -1,4 +1,13 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const jwt = require('jsonwebtoken');
+
+// Secret JWT WAJIB dari environment — harus sama dengan yang dipakai
+// authController saat membuat token. Tidak ada fallback tertulis di kode.
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET belum diisi di environment. Server tidak boleh jalan tanpa secret JWT.');
+}
 
 function verifyAdminToken(req, res, next) {
   const authHeader = req.headers.authorization || '';
@@ -16,10 +25,7 @@ function verifyAdminToken(req, res, next) {
   }
 
   try {
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || 'stitch-absensi-karyawan-jwt-secret-key-2026'
-    );
+    const decoded = jwt.verify(token, JWT_SECRET);
     req.admin = decoded;
     return next();
   } catch (err) {
